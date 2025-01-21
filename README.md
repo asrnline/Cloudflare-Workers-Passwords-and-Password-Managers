@@ -62,4 +62,4 @@ MIT - See [LICENSE](LICENSE) file for details
 
 ## Author
 
-Asrn Line - [GitHub](https://github.com/FracAsini)
+Asrn Line - [GitHub](https://github.com/asrnline)
