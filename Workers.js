@@ -31,7 +31,7 @@ const HTML_TEMPLATE = `
                 "type": "image/svg+xml"
             }
         ],
-        "start_url": "/",
+        "start_url": "/",  // 确保这是一个有效的 URL
         "display": "standalone",
         "background_color": "#ffffff",
         "theme_color": "#4CAF50"
@@ -44,7 +44,7 @@ const HTML_TEMPLATE = `
             <circle cx="12" cy="15" r="2"/>
         </svg>
     `)}">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#4CAF50">
 
@@ -1043,13 +1043,14 @@ const HTML_TEMPLATE = `
 
         .password-display input {
             width: 100%;
-            padding: 12px 45px 12px 15px;
+            padding: 12px 45px 12px 15px;  /* 修改左右内边距 */
             font-family: monospace;
             font-size: 16px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             background: #fff;
             transition: all 0.3s;
+            text-align: left;  /* 添加左对齐 */
         }
 
         .password-display input:focus {
@@ -1068,6 +1069,7 @@ const HTML_TEMPLATE = `
             padding: 8px;
             cursor: pointer;
             transition: all 0.3s;
+            width: auto;  /* 确保按钮宽度自适应 */
         }
 
         .password-display .copy-btn:hover {
@@ -1383,6 +1385,54 @@ const HTML_TEMPLATE = `
             background: #2196F3;
             color: white;
         }
+
+        /* 添加保存按钮样式 */
+        .settings-save-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .settings-save-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .settings-save-btn:active {
+            transform: translateY(0);
+        }
+
+        .settings-save-btn i {
+            font-size: 16px;
+        }
+
+        .settings-save-btn.loading {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        /* 添加成功提示样式 */
+        .save-success {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -1590,13 +1640,19 @@ const HTML_TEMPLATE = `
                     
                     <div class="color-picker-group">
                         <label>主题色</label>
-                        <input type="color" id="primaryColor" value="#4CAF50" onchange="updateThemeColor(this.value)">
+                        <input type="color" id="primaryColor" value="#4CAF50">
                     </div>
 
                     <div class="color-picker-group">
                         <label>背景色</label>
-                        <input type="color" id="backgroundColor" value="#f5f5f5" onchange="updateBackgroundColor(this.value)">
+                        <input type="color" id="backgroundColor" value="#f5f5f5">
                     </div>
+
+                    <button class="settings-save-btn" onclick="saveThemeSettings()">
+                        <i class="fas fa-save"></i>
+                        保存设置
+                    </button>
+                    <div class="save-success" id="saveSuccess">设置保存成功！</div>
                 </div>
             </div>
         </div>
@@ -1887,6 +1943,20 @@ const HTML_TEMPLATE = `
             }
         };
 
+        // 添加文件上传处理逻辑
+        document.getElementById('fileInput').onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('content').value = e.target.result;
+                    // 确保内容显示在表单中
+                    document.getElementById('content').dispatchEvent(new Event('input'));
+                };
+                reader.readAsText(file);
+            }
+        };
+
         // 修改密码生成相关函数
         function generatePassword() {
             const length = document.getElementById('length').value;
@@ -2040,16 +2110,75 @@ const HTML_TEMPLATE = `
             }
         }
 
-        // 添加主题相关函数
-        async function updateThemeColor(color) {
-            document.documentElement.style.setProperty('--primary-color', color);
-            await saveThemeSettings();
+        // 修改保存主题设置函数
+        async function saveThemeSettings() {
+            const saveBtn = document.querySelector('.settings-save-btn');
+            const successMsg = document.getElementById('saveSuccess');
+            
+            try {
+                console.log('开始保存设置');  // 调试信息
+                saveBtn.classList.add('loading');
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+                
+                const settings = {
+                    primaryColor: document.getElementById('primaryColor').value,
+                    backgroundColor: document.getElementById('backgroundColor').value
+                };
+
+                // 更新页面样式
+                document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
+                document.documentElement.style.setProperty('--background-color', settings.backgroundColor);
+
+                // 保存到服务器
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (!response.ok) {
+                    throw new Error('保存失败');
+                }
+
+                console.log('设置保存成功');  // 调试信息
+
+                // 显示成功消息
+                successMsg.style.display = 'block';
+                saveBtn.innerHTML = '<i class="fas fa-check"></i> 保存成功';
+                saveBtn.style.background = '#28a745';
+
+                // 3秒后恢复按钮状态并跳转
+                setTimeout(() => {
+                    saveBtn.classList.remove('loading');
+                    saveBtn.innerHTML = '<i class="fas fa-save"></i> 保存设置';
+                    saveBtn.style.background = '';
+                    successMsg.style.display = 'none';
+                    window.location.reload();  // 自动刷新页面
+                }, 3000);
+
+            } catch (error) {
+                console.error('保存设置失败:', error);
+                saveBtn.innerHTML = '<i class="fas fa-exclamation-circle"></i> 保存失败';
+                saveBtn.style.background = '#dc3545';
+                
+                setTimeout(() => {
+                    saveBtn.classList.remove('loading');
+                    saveBtn.innerHTML = '<i class="fas fa-save"></i> 保存设置';
+                    saveBtn.style.background = '';
+                }, 3000);
+            }
         }
 
-        async function updateBackgroundColor(color) {
-            document.documentElement.style.setProperty('--background-color', color);
-            await saveThemeSettings();
-        }
+        // 修改颜色选择器的事件处理
+        document.getElementById('primaryColor').addEventListener('input', function(e) {
+            document.documentElement.style.setProperty('--primary-color', e.target.value);
+        });
+
+        document.getElementById('backgroundColor').addEventListener('input', function(e) {
+            document.documentElement.style.setProperty('--background-color', e.target.value);
+        });
 
         async function handleImageUpload(input) {
             const file = input.files[0];
@@ -2092,40 +2221,40 @@ const HTML_TEMPLATE = `
 
         async function loadThemeSettings() {
             try {
-                const response = await fetch('/api/settings');
-                if (response.ok) {
-                    const settings = await response.json();
-                    if (settings.primaryColor) {
-                        document.getElementById('primaryColor').value = settings.primaryColor;
-                        document.documentElement.style.setProperty('--primary-color', settings.primaryColor);
+                const response = await fetch('/api/settings', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
                     }
-                    if (settings.backgroundColor) {
-                        document.getElementById('backgroundColor').value = settings.backgroundColor;
-                        document.documentElement.style.setProperty('--background-color', settings.backgroundColor);
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('加载设置失败:', errorData);
+                    // 使用默认值
+                    document.documentElement.style.setProperty('--primary-color', '#4CAF50');
+                    document.documentElement.style.setProperty('--background-color', '#f5f5f5');
+                    return;
+                }
+
+                const data = await response.json();
+                if (data.success && data.settings?.theme) {
+                    const { primaryColor, backgroundColor } = data.settings.theme;
+                    if (primaryColor) {
+                        document.getElementById('primaryColor').value = primaryColor;
+                        document.documentElement.style.setProperty('--primary-color', primaryColor);
                     }
-                    if (settings.loginBgImage) {
-                        const imagePreview = document.getElementById('imagePreview');
-                        imagePreview.style.backgroundImage = \`url(\${settings.loginBgImage})\`;
-                        imagePreview.classList.remove('empty');
-                        imagePreview.innerHTML = '';
-                    }
-                    if (settings.currentPassword) {
-                        document.getElementById('currentSystemPassword').value = settings.currentPassword;
-                    }
-                    if (settings.deployTime) {
-                        const deployDate = new Date(settings.deployTime);
-                        document.getElementById('deployTime').textContent = deployDate.toLocaleString('zh-CN', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                        });
+                    if (backgroundColor) {
+                        document.getElementById('backgroundColor').value = backgroundColor;
+                        document.documentElement.style.setProperty('--background-color', backgroundColor);
                     }
                 }
             } catch (error) {
                 console.error('加载设置失败:', error);
+                // 使用默认值
+                document.documentElement.style.setProperty('--primary-color', '#4CAF50');
+                document.documentElement.style.setProperty('--background-color', '#f5f5f5');
             }
         }
 
@@ -2162,6 +2291,8 @@ const HTML_TEMPLATE = `
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('content').value = e.target.result;
+                    // 确保内容显示在表单中
+                    document.getElementById('content').dispatchEvent(new Event('input'));
                 };
                 reader.readAsText(file);
             }
@@ -2439,6 +2570,13 @@ const HTML_TEMPLATE = `
         // 添加 handleSettings 函数
         async function handleSettings(request) {
             try {
+                // 添加详细的错误日志
+                console.log('处理设置请求:', {
+                    method: request.method,
+                    hasEnv: !!request.env,
+                    hasKV: !!request.env?.KV
+                });
+
                 // 验证 KV 存储
                 if (!request.env?.KV) {
                     throw new Error('KV 存储未配置');
@@ -2466,7 +2604,7 @@ const HTML_TEMPLATE = `
                         });
                     } catch (error) {
                         console.error('获取设置失败:', error);
-                        throw error;
+                        throw new Error('获取设置失败: ' + error.message);
                     }
                 }
 
@@ -2474,13 +2612,12 @@ const HTML_TEMPLATE = `
                     try {
                         const newSettings = await request.json();
                         
-                        // 验证背景图片大小
-                        if (newSettings.loginBgImage) {
-                            const base64Data = newSettings.loginBgImage.split(',')[1];
-                            const imageSize = base64Data.length * 0.75; // 转换为字节大小
-                            if (imageSize > 5 * 1024 * 1024) { // 5MB 限制
-                                throw new Error('背景图片不能超过 5MB');
-                            }
+                        // 验证设置数据
+                        if (newSettings.primaryColor && !/^#[0-9A-Fa-f]{6}$/.test(newSettings.primaryColor)) {
+                            throw new Error('无效的主题色格式');
+                        }
+                        if (newSettings.backgroundColor && !/^#[0-9A-Fa-f]{6}$/.test(newSettings.backgroundColor)) {
+                            throw new Error('无效的背景色格式');
                         }
 
                         // 获取当前设置
@@ -2497,11 +2634,15 @@ const HTML_TEMPLATE = `
                         // 合并设置
                         const updatedSettings = {
                             ...currentSettings,
-                            ...newSettings,
+                            theme: {
+                                ...currentSettings.theme,
+                                primaryColor: newSettings.primaryColor || currentSettings.theme?.primaryColor || '#4CAF50',
+                                backgroundColor: newSettings.backgroundColor || currentSettings.theme?.backgroundColor || '#f5f5f5'
+                            },
                             lastUpdated: new Date().toISOString()
                         };
 
-                        // 保存设置到 KV
+                        // 保存到 KV
                         try {
                             await request.env.KV.put('app:settings', JSON.stringify(updatedSettings));
                         } catch (error) {
@@ -2521,7 +2662,7 @@ const HTML_TEMPLATE = `
                         });
                     } catch (error) {
                         console.error('处理设置更新失败:', error);
-                        throw error;
+                        throw new Error('更新设置失败: ' + error.message);
                     }
                 }
 
@@ -2531,7 +2672,12 @@ const HTML_TEMPLATE = `
                 return new Response(JSON.stringify({
                     success: false,
                     error: error.message || '设置处理失败',
-                    details: error.stack
+                    details: error.stack,
+                    debug: {
+                        hasEnv: !!request.env,
+                        hasKV: !!request.env?.KV,
+                        method: request.method
+                    }
                 }), {
                     status: 500,
                     headers: {
@@ -2542,11 +2688,148 @@ const HTML_TEMPLATE = `
             }
         }
 
-        // 修改 handleRequest 函数中的路由处理
+        // 修改 handleRequest 函数，添加更好的错误处理
         async function handleRequest(request) {
             try {
                 const url = new URL(request.url);
                 const path = url.pathname;
+
+                // 添加调试日志
+                console.log('请求路径:', path, '方法:', request.method);
+
+                // 处理 /api/settings 路由，不需要登录验证
+                if (path === '/api/settings') {
+                    try {
+                        // 验证 KV 存储
+                        if (!request.env?.KV) {
+                            console.error('KV 存储未配置');
+                            return new Response(JSON.stringify({
+                                success: false,
+                                error: 'KV 存储未配置',
+                                debug: { env: !!request.env }
+                            }), {
+                                status: 500,
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Access-Control-Allow-Origin': '*',
+                                    'Cache-Control': 'no-store'
+                                }
+                            });
+                        }
+
+                        // 处理 GET 请求
+                        if (request.method === 'GET') {
+                            try {
+                                const settingsStr = await request.env.KV.get('app:settings');
+                                const settings = settingsStr ? JSON.parse(settingsStr) : {
+                                    theme: {
+                                        primaryColor: '#4CAF50',
+                                        backgroundColor: '#f5f5f5'
+                                    }
+                                };
+
+                                return new Response(JSON.stringify({
+                                    success: true,
+                                    settings: settings
+                                }), {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*',
+                                        'Cache-Control': 'no-store'
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('获取设置失败:', error);
+                                return new Response(JSON.stringify({
+                                    success: false,
+                                    error: '获取设置失败',
+                                    message: error.message
+                                }), {
+                                    status: 500,
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*'
+                                    }
+                                });
+                            }
+                        }
+
+                        // 处理 POST 请求
+                        if (request.method === 'POST') {
+                            try {
+                                const newSettings = await request.json();
+                                const currentSettingsStr = await request.env.KV.get('app:settings');
+                                const currentSettings = currentSettingsStr ? JSON.parse(currentSettingsStr) : {};
+
+                                const updatedSettings = {
+                                    ...currentSettings,
+                                    theme: {
+                                        ...currentSettings.theme,
+                                        primaryColor: newSettings.primaryColor || currentSettings.theme?.primaryColor || '#4CAF50',
+                                        backgroundColor: newSettings.backgroundColor || currentSettings.theme?.backgroundColor || '#f5f5f5'
+                                    },
+                                    lastUpdated: new Date().toISOString()
+                                };
+
+                                await request.env.KV.put('app:settings', JSON.stringify(updatedSettings));
+
+                                return new Response(JSON.stringify({
+                                    success: true,
+                                    settings: updatedSettings
+                                }), {
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*',
+                                        'Cache-Control': 'no-store'
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('保存设置失败:', error);
+                                return new Response(JSON.stringify({
+                                    success: false,
+                                    error: '保存设置失败',
+                                    message: error.message
+                                }), {
+                                    status: 500,
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Access-Control-Allow-Origin': '*'
+                                    }
+                                });
+                            }
+                        }
+
+                        // 处理 OPTIONS 请求
+                        if (request.method === 'OPTIONS') {
+                            return new Response(null, {
+                                headers: {
+                                    'Access-Control-Allow-Origin': '*',
+                                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                                    'Access-Control-Allow-Headers': 'Content-Type',
+                                    'Access-Control-Max-Age': '86400'
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error('处理设置请求失败:', error);
+                        return new Response(JSON.stringify({
+                            success: false,
+                            error: '处理设置请求失败',
+                            message: error.message,
+                            debug: {
+                                hasEnv: !!request.env,
+                                hasKV: !!request.env?.KV,
+                                method: request.method
+                            }
+                        }), {
+                            status: 500,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*'
+                            }
+                        });
+                    }
+                }
 
                 // 检查是否已登录
                 const sessionToken = request.headers.get('Cookie')?.match(/session=([^;]+)/)?.[1];
@@ -2554,8 +2837,15 @@ const HTML_TEMPLATE = `
 
                 // API 路由处理
                 if (path.startsWith('/api/')) {
-                    // 需要登录的 API
-                    if (!isLoggedIn && path !== '/api/settings') {
+                    // 登录和初始化接口
+                    if (path === '/api/login' || path === '/api/check-setup') {
+                        return path === '/api/login' 
+                            ? await handleLogin(request)
+                            : await handleCheckSetup(request);
+                    }
+
+                    // 其他 API 需要登录
+                    if (!isLoggedIn) {
                         return new Response(JSON.stringify({
                             success: false,
                             error: '未登录或会话已过期'
@@ -2566,53 +2856,31 @@ const HTML_TEMPLATE = `
                     }
 
                     // 处理各种 API 请求
-                    if (path === '/api/items') {
+                    switch (path) {
+                        case '/api/items':
                         if (request.method === 'GET') {
-                            try {
                                 const items = await listItems(request);
-                                return new Response(JSON.stringify({
-                                    success: true,
-                                    items: items
-                                }), {
-                                    headers: { 
-                                        'Content-Type': 'application/json',
-                                        'Cache-Control': 'no-store'
-                                    }
+                                return new Response(JSON.stringify(items), {
+                                    headers: { 'Content-Type': 'application/json' }
                                 });
-                            } catch (error) {
-                                return new Response(JSON.stringify({
-                                    success: false,
-                                    error: '获取列表失败',
-                                    details: error.message
-                                }), {
-                                    status: 500,
+                        } else if (request.method === 'POST') {
+                                const item = await request.json();
+                                const newItem = await createItem(request, item);
+                                return new Response(JSON.stringify({ success: true, item: newItem }), {
                                     headers: { 'Content-Type': 'application/json' }
                                 });
                             }
-                        } else if (request.method === 'POST') {
-                            try {
-                                const item = await request.json();
-                                const newItem = await createItem(request, item);
-                                
-                                // 返回成功响应
-                                return new Response(JSON.stringify({
-                                    success: true,
-                                    message: '添加成功',
-                                    item: newItem
-                                }), {
-                                    headers: { 
-                                        'Content-Type': 'application/json',
-                                        'Cache-Control': 'no-store'
-                                    }
-                                });
-                            } catch (error) {
-                                console.error('添加条目失败:', error);
-                                return new Response(JSON.stringify({
-                                    success: false,
-                                    error: error.message || '添加失败',
-                                    details: error.stack
-                                }), {
-                                    status: 400,
+                            break;
+                        case '/api/logout':
+                            return await handleLogout(request);
+                        case '/api/change-password':
+                            return await handleChangePassword(request);
+                        default:
+                            if (path.startsWith('/api/items/')) {
+                                const id = path.split('/').pop();
+                                if (request.method === 'DELETE') {
+                                    await deleteItem(request, id);
+                                    return new Response(JSON.stringify({ success: true }), {
                                     headers: { 'Content-Type': 'application/json' }
                                 });
                             }
@@ -2642,10 +2910,14 @@ const HTML_TEMPLATE = `
                 return new Response(JSON.stringify({
                     success: false,
                     error: '服务器错误',
-                    details: error.message
+                    message: error.message,
+                    stack: error.stack
                 }), {
                     status: 500,
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
                 });
             }
         }
@@ -2739,6 +3011,130 @@ const HTML_TEMPLATE = `
                 throw new Error('获取列表失败');
             }
         }
+
+        // 添加清理缓存函数
+        async function clearAllCaches() {
+            try {
+                // 清除浏览器缓存
+                if ('caches' in window) {
+                    const cacheKeys = await caches.keys();
+                    await Promise.all(
+                        cacheKeys.map(key => caches.delete(key))
+                    );
+                }
+
+                // 清除 localStorage
+                localStorage.clear();
+                
+                // 清除 sessionStorage
+                sessionStorage.clear();
+
+                // 清除 Service Worker 缓存
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(
+                        registrations.map(registration => registration.unregister())
+                    );
+                }
+
+                console.log('缓存清理完成');
+            } catch (error) {
+                console.error('清理缓存失败:', error);
+            }
+        }
+
+        // 添加页面加载和刷新时的缓存清理
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 清理缓存
+            await clearAllCaches();
+            
+            // 继续执行其他初始化操作
+            loadItems().catch(function(error) {
+                console.error('初始化失败:', error);
+            });
+            
+            loadThemeSettings();
+            checkInitialPassword();
+        });
+
+        // 添加页面刷新检测
+        window.addEventListener('beforeunload', async (event) => {
+            // 清理缓存
+            await clearAllCaches();
+        });
+
+        // 修改 Service Worker 注册代码
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', async function() {
+                try {
+                    // 先注销所有已存在的 Service Worker
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(
+                        registrations.map(registration => registration.unregister())
+                    );
+
+                    // 重新注册 Service Worker
+                    const registration = await navigator.serviceWorker.register('/sw.js', {
+                        scope: '/'
+                    });
+                    console.log('ServiceWorker 注册成功');
+
+                    // 强制 Service Worker 立即激活
+                    if (registration.active) {
+                        registration.active.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                } catch (err) {
+                    console.log('ServiceWorker 注册失败: ', err);
+                }
+            });
+        }
+
+        // 修改 Service Worker 脚本
+        const SERVICE_WORKER_SCRIPT = `
+        // Service Worker 脚本
+        const CACHE_NAME = 'password-manager-v1';
+
+        // 监听安装事件
+        self.addEventListener('install', (event) => {
+            event.waitUntil(
+                caches.delete(CACHE_NAME)  // 安装时清除旧缓存
+            );
+        });
+
+        // 监听激活事件
+        self.addEventListener('activate', (event) => {
+            event.waitUntil(
+                Promise.all([
+                    // 清除所有缓存
+                    caches.keys().then(cacheNames => {
+                        return Promise.all(
+                            cacheNames.map(cacheName => caches.delete(cacheName))
+                        );
+                    }),
+                    // 立即接管页面
+                    clients.claim()
+                ])
+            );
+        });
+
+        // 监听消息事件
+        self.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SKIP_WAITING') {
+                self.skipWaiting();
+            }
+        });
+
+        // 监听请求事件
+        self.addEventListener('fetch', (event) => {
+            event.respondWith(
+                fetch(event.request).catch(() => {
+                    return new Response('离线访问不可用', {
+                        headers: { 'Content-Type': 'text/plain;charset=UTF-8' }
+                    });
+                })
+            );
+        });
+        `;
     </script>
 </body>
 </html>
@@ -3100,8 +3496,8 @@ async function handleRequest(request) {
                         });
                     } else if (request.method === 'POST') {
                         const item = await request.json();
-                        await createItem(request, item);
-                        return new Response(JSON.stringify({ success: true }), {
+                        const newItem = await createItem(request, item);
+                        return new Response(JSON.stringify({ success: true, item: newItem }), {
                             headers: { 'Content-Type': 'application/json' }
                         });
                     }
@@ -3431,6 +3827,7 @@ async function createItem(request, item) {
         };
         
         await request.env.KV.put(`item:${id}`, JSON.stringify(sanitizedItem));
+        return sanitizedItem;
     } catch (error) {
         console.error('创建项目错误:', error);
         throw new Error('创建失败: ' + error.message);
@@ -3602,6 +3999,7 @@ async function handleChangePassword(request) {
 const SERVICE_WORKER_SCRIPT = `
 // Service Worker 脚本
 const CACHE_NAME = 'password-manager-v1';
+const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 1天
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -3638,6 +4036,29 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
+        })
+    );
+});
+
+// 添加自动清理缓存功能
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.keys().then((keys) => {
+                return Promise.all(
+                    keys.map((key) => {
+                        return cache.match(key).then((response) => {
+                            if (!response) return;
+                            const dateHeader = response.headers.get('date');
+                            if (!dateHeader) return;
+                            const age = Date.now() - new Date(dateHeader).getTime();
+                            if (age > MAX_CACHE_AGE) {
+                                return cache.delete(key);
+                            }
+                        });
+                    })
+                );
+            });
         })
     );
 });
