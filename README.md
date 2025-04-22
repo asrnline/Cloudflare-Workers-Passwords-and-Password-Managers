@@ -1,4 +1,4 @@
-# Cloudflare Workers Passwords and Password Managers
+# Passwords and Password Managers
 
 ## Features
 
