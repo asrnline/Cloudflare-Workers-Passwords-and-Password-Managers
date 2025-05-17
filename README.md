@@ -35,7 +35,7 @@ Instructions:
 
  -MEMOS_KV variable has been bound to the KV namespace named "MEMOS" through Dashboard
 
-# No need to bind manually here
+# Easy to operate
 
 # Environment variables, set in Cloudflare Dashboard
 
