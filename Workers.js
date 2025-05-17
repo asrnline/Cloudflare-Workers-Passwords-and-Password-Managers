@@ -4340,7 +4340,7 @@ const notFoundHtml = `
     <div class="error-code">404</div>
     <h1>页面不存在</h1>
     <p>抱歉，您尝试访问的页面不存在或可能已被移除。</p>
-    <a href="https://inoo.fun/" class="home-link">返回首页</a>
+    <a href="https://www.qq.com/" class="home-link">返回首页</a>
   </div>
 </body>
 </html>
