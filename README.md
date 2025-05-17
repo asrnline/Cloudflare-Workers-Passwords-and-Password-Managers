@@ -33,15 +33,15 @@
 
 # KV namespace, please bind in Cloudflare Dashboard
 
-# MEMOS_KV variable has been bound to the KV namespace named "MEMOS" through Dashboard
+### MEMOS_KV variable has been bound to the KV namespace named "MEMOS" through Dashboard
 
-# No need to bind manually here
+### No need to bind manually here
 
-# Environment variables, set in Cloudflare Dashboard
+### Environment variables, set in Cloudflare Dashboard
 
-# const ACCESS_UUID = ACCESS_UUID;
+### const ACCESS_UUID = ACCESS_UUID;
 
-# const ACCESS_PASSWORD = ACCESS_PASSWORD;
+### const ACCESS_PASSWORD = ACCESS_PASSWORD;
 ```
 
 ## Security Notes
