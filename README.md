@@ -8,54 +8,40 @@
 - ☁️ Secure Storage - Uses KV storage for encrypted password data
 - 💳 Cross-platform Support - Works with all modern browsers
 
-## Getting Started
-
-### Prerequisites
-
-- Cloudflare Account
-
-### Installation
-
-```bash
-Copy code to Cloudflare Workers
-```
-
-## Configuration
-
-1. Create KV namespace in Cloudflare Dashboard
-
-```toml
-Create KV namespace
-
-Name: KV 
-
-Variable:KV
-```
 
 ## Usage
 
-// 密码管理系统 - Cloudflare Worker
+### Password Management System - Cloudflare Worker
 
-/**
- * 确保KV和环境变量可用
- * 
- * 使用说明:
- * 1. 在Cloudflare Dashboard创建KV命名空间,名称为"MEMOS"
- * 2. 在Worker配置中绑定此KV命名空间到变量MEMOS_KV
- * 3. 添加环境变量:
- *    - ACCESS_UUID: 访问密钥
- *    - ACCESS_PASSWORD: 管理密码(可选)
- *    - ACCESS_MULTIFACTOR: 多重验证码(可选,设置后启用多重验证)
- */
+* Make sure KV and environment variables are available
 
-// KV命名空间，请在Cloudflare Dashboard中绑定
-// MEMOS_KV 变量已通过Dashboard绑定到名为"MEMOS"的KV命名空间
-// 无需在此手动绑定
+* Instructions:
 
-// 环境变量，在Cloudflare Dashboard中设置
-// const ACCESS_UUID = ACCESS_UUID;
-// const ACCESS_PASSWORD = ACCESS_PASSWORD;
+* 1. Create a KV namespace in Cloudflare Dashboard named "MEMOS"
 
+* 2. Bind this KV namespace to the variable MEMOS_KV in the Worker configuration
+
+* 3. Add environment variables:
+
+* - ACCESS_UUID: Access key
+
+* - ACCESS_PASSWORD: Management password (optional)
+
+* - ACCESS_MULTIFACTOR: Multiple verification code (optional, enable multiple verification after setting)
+
+*
+
+## KV namespace, please bind in Cloudflare Dashboard
+
+## MEMOS_KV variable has been bound to the KV namespace named "MEMOS" through Dashboard
+
+## No need to bind manually here
+
+## Environment variables, set in Cloudflare Dashboard
+
+## const ACCESS_UUID = ACCESS_UUID;
+
+## const ACCESS_PASSWORD = ACCESS_PASSWORD;
 ```
 
 ## Security Notes
