@@ -13,35 +13,35 @@
 
 ### Password Management System - Cloudflare Worker
 
-* Make sure KV and environment variables are available
+#  Make sure KV and environment variables are available
 
-* Instructions:
+# Instructions:
 
-* 1. Create a KV namespace in Cloudflare Dashboard named "MEMOS"
+#  1. Create a KV namespace in Cloudflare Dashboard named "MEMOS"
 
-* 2. Bind this KV namespace to the variable MEMOS_KV in the Worker configuration
+#  2. Bind this KV namespace to the variable MEMOS_KV in the Worker configuration
 
-* 3. Add environment variables:
+#  3. Add environment variables:
 
-* - ACCESS_UUID: Access key
+#  - ACCESS_UUID: Access key
 
-* - ACCESS_PASSWORD: Management password (optional)
+# - ACCESS_PASSWORD: Management password (optional)
 
-* - ACCESS_MULTIFACTOR: Multiple verification code (optional, enable multiple verification after setting)
+# - ACCESS_MULTIFACTOR: Multiple verification code (optional, enable multiple verification after setting)
 
 *
 
-## KV namespace, please bind in Cloudflare Dashboard
+# KV namespace, please bind in Cloudflare Dashboard
 
-## MEMOS_KV variable has been bound to the KV namespace named "MEMOS" through Dashboard
+# MEMOS_KV variable has been bound to the KV namespace named "MEMOS" through Dashboard
 
-## No need to bind manually here
+# No need to bind manually here
 
-## Environment variables, set in Cloudflare Dashboard
+# Environment variables, set in Cloudflare Dashboard
 
-## const ACCESS_UUID = ACCESS_UUID;
+# const ACCESS_UUID = ACCESS_UUID;
 
-## const ACCESS_PASSWORD = ACCESS_PASSWORD;
+# const ACCESS_PASSWORD = ACCESS_PASSWORD;
 ```
 
 ## Security Notes
