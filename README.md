@@ -11,10 +11,6 @@
 
 ## Usage
 
-DartNode - [DartNode](https://dartnode.com)
-
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
-
 
 ### Password Management System - Cloudflare Worker
 
