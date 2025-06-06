@@ -11,6 +11,11 @@
 
 ## Usage
 
+DartNode - [DartNode](https://dartnode.com)
+
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+
+
 ### Password Management System - Cloudflare Worker
 
  Make sure KV and environment variables are available
@@ -66,7 +71,4 @@ MIT - See [LICENSE](LICENSE) file for details
 
 Asrn Line - [GitHub](https://github.com/asrnline)
 
-DartNode - [DartNode](https://dartnode.com)
-
-[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
 
