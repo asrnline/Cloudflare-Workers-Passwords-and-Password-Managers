@@ -65,3 +65,8 @@ MIT - See [LICENSE](LICENSE) file for details
 ## Author
 
 Asrn Line - [GitHub](https://github.com/asrnline)
+
+DartNode - [DartNode](https://dartnode.com)
+
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+
